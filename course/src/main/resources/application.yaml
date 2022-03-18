@@ -1,0 +1,32 @@
+server:
+  port: 8082
+  servlet:
+    context-path: '/ead-course/'
+  
+spring:
+  application:
+    name: ead-course-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ead-course
+    username: ead-authuser
+    password: ead-authuser
+  jpa:
+    hibernate:
+      ddl-auto: update
+      dialect: org.hibernate.dialect.PostgresSQLDialect
+      jdbc:
+        lob.non-contextual-creation: true
+    properties:
+      hibernate:
+        show_sql: true
+        
+api:
+  url:
+    authuser: 'http://ead-authuser-service/ead-authuser'
+    
+eureka:
+  client:
+    service-url:
+      default-zone: 'http://localhost:8087/eureka'
+  instance:
+    hostname: localhost      

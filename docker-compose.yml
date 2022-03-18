@@ -1,0 +1,37 @@
+version: "3"
+
+services:
+  postgres-decoder-ead-authuser:
+    container_name: postgres-decoder-ead-authuser
+    image: postgres:13.3-alpine
+    environment:
+      - POSTGRES_DB=ead-authuser
+      - POSTGRES_USER=ead-authuser
+      - POSTGRES_PASSWORD=ead-authuser
+    ports:
+      - "5432:5432"
+    networks:
+      - backend-decoder
+    volumes:
+      - pg-data-decoder:/var/lib/postgresql/data
+
+  postgres-decoder-ead-course:
+    container_name: postgres-decoder-ead-course
+    image: postgres:13.3-alpine
+    environment:
+      - POSTGRES_DB=ead-course
+      - POSTGRES_USER=ead-course
+      - POSTGRES_PASSWORD=ead-course
+    ports:
+      - "5431:5432"
+    networks:
+      - backend-decoder
+    volumes:
+      - pg-data-decoder-course:/var/lib/postgresql/data
+
+networks:
+  backend-decoder:
+
+volumes:
+  pg-data-decoder:
+  pg-data-decoder-course:
