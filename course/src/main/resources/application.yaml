@@ -19,11 +19,21 @@ spring:
     properties:
       hibernate:
         show_sql: true
-        
-api:
-  url:
-    authuser: 'http://ead-authuser-service/ead-authuser'
-    
+  rabbitmq:
+    addresses: amqp://admin:admin@localhost:5672
+      
+          
+ead:
+  api:
+    url:
+      authuser: 'http://ead-authuser-service/ead-authuser'
+  broker:
+    exchange:
+      userEvent: ead.userevent
+    queue:
+      userEvent:
+        course: ead.userevent.ms.course            
+          
 eureka:
   client:
     service-url:

@@ -30,7 +30,7 @@ public class UserClient {
 	@Autowired
 	private UtilsServiceImpl utilsServiceImpl;
 	
-	@Value("${api.url.authuser}")
+	@Value("${ead.api.url.authuser}")
 	private String REQUEST_URI;
 
 	public Page<UserDto> getAllUsersByCourse(UUID courseId, Pageable pageable) {

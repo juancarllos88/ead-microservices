@@ -6,7 +6,6 @@ import javax.persistence.criteria.Join;
 
 import org.springframework.data.jpa.domain.Specification;
 
-import br.com.ead.authuser.models.UserCourseModel;
 import br.com.ead.authuser.models.UserModel;
 import net.kaczmarzyk.spring.data.jpa.domain.Equal;
 import net.kaczmarzyk.spring.data.jpa.domain.Like;
@@ -23,12 +22,12 @@ public class SpecificationTemplate {
 	}
 	
 	
-	public static Specification<UserModel> userCourseId(final UUID courseId) {
-		return (root, query, cb) -> {
-			query.distinct(true);
-			Join<UserModel,UserCourseModel> userCourses = root.join("courses");
-			return cb.equal(userCourses.get("courseId"), courseId);
-		};
-	}
+//	public static Specification<UserModel> userCourseId(final UUID courseId) {
+//		return (root, query, cb) -> {
+//			query.distinct(true);
+//			Join<UserModel,UserCourseModel> userCourses = root.join("courses");
+//			return cb.equal(userCourses.get("courseId"), courseId);
+//		};
+//	}
 
 }

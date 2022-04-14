@@ -25,7 +25,10 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 import br.com.ead.authuser.dto.UserDto;
 import br.com.ead.authuser.dto.UserDto.UserView;
+import br.com.ead.authuser.dto.events.UserEventDto;
+import br.com.ead.authuser.enums.ActionType;
 import br.com.ead.authuser.models.UserModel;
+import br.com.ead.authuser.publishers.UserEventPublisher;
 import br.com.ead.authuser.services.UserService;
 import br.com.ead.authuser.specifications.SpecificationTemplate;
 
@@ -37,13 +40,21 @@ public class UserController {
 
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private UserEventPublisher UserEventPublisher;
+	
+	@GetMapping("/mq")
+	public ResponseEntity<String> message() {
+		var dto = new UserEventDto();
+		UserEventPublisher.publishUserEvent(dto, ActionType.CREATE);
+		return ResponseEntity.status(HttpStatus.OK).body("Mensagem Enviada");
+	}
 
 	@GetMapping
 	public ResponseEntity<Page<UserModel>> findAll(SpecificationTemplate.UserSpec specification, 
-			@PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-			@RequestParam(required = false) UUID courseId) {
-		Page<UserModel> userModelPage = userService.findAll(pageable,
-				courseId != null ? SpecificationTemplate.userCourseId(courseId).and(specification) : specification);
+			@PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+		Page<UserModel> userModelPage = userService.findAll(pageable, specification);
 		return ResponseEntity.status(HttpStatus.OK).body(userModelPage);
 	}
 

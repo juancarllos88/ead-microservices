@@ -27,7 +27,6 @@ public interface UserService {
 
 	UserModel save(UserDto userDto);
 
-
 	Page<UserModel> findAll(Pageable pageable, Specification<UserModel> specification);
 
 	UserModel subscriptionInstructor(UUID userId);

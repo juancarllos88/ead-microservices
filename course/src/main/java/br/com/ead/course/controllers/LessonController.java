@@ -53,7 +53,8 @@ public class LessonController {
 	}
 	
 	@GetMapping("/modules/lessons")
-	public ResponseEntity<Page<LessonModel>> findAll(@PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable){
+	public ResponseEntity<Page<LessonModel>> findAll(
+			@PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
 		return responseService.ok(lessonService.findAll(pageable));
 	}
 	

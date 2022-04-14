@@ -11,19 +11,20 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.ead.course.clients.UserClient;
 import br.com.ead.course.dto.SubscriptionDto;
 import br.com.ead.course.dto.UserDto;
 import br.com.ead.course.infrastructure.services.ResponseService;
-import br.com.ead.course.models.CourseUserModel;
-import br.com.ead.course.services.CourseUserService;
+import br.com.ead.course.models.UserModel;
+import br.com.ead.course.services.ConverterService;
+import br.com.ead.course.services.CourseService;
+import br.com.ead.course.services.UserService;
+import br.com.ead.course.specification.SpecificationTemplate;
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -31,33 +32,31 @@ public class CourseUserController {
 
 	@Autowired
 	private ResponseService responseService;
+	
+	@Autowired
+	private UserService userService;
 
 	@Autowired
-	private UserClient userClient;
+	private ConverterService converterService;
 	
 	
 	@Autowired
-	private CourseUserService courseUserService;
+	private CourseService courseService;
 
 	@GetMapping("/courses/{courseId}/users")
-	public ResponseEntity<Page<UserDto>> getAllCoursesByUser(
+	public ResponseEntity<Page<UserDto>> getAllUserByCourse(SpecificationTemplate.UserSpec spec,
 			@PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
 			@PathVariable(value = "courseId") UUID courseId) {
-		return responseService.ok(userClient.getAllUsersByCourse(courseId, pageable));
+		Page<UserModel> users = userService.findAll(pageable, SpecificationTemplate.userCourseId(courseId).and(spec));
+		return responseService.ok(converterService.convert(users, UserDto.class));
 
 	}
 	
 	@PostMapping("/courses/{courseId}/users/subscription")
-	public ResponseEntity<CourseUserModel> subscriptionUserInCourse(@PathVariable UUID courseId, @RequestBody @Valid SubscriptionDto subscription){
-		CourseUserModel courseUserModel = courseUserService.subscriptionUserInCourse(courseId,subscription);
-		return responseService.create(courseUserModel);
+	public ResponseEntity<String> subscriptionUserInCourse(@PathVariable UUID courseId, @RequestBody @Valid SubscriptionDto subscription){
+		courseService.subscriptionUserInCourse(courseId,subscription);
+		return responseService.create("Subscription created successfully.");
 		
 	}
 	
-	@DeleteMapping("/courses/users/{userId}")
-	public ResponseEntity<String> deleteCourseUserByUser(@PathVariable UUID userId){
-		courseUserService.deleteCourseUserByUser(userId);
-		return responseService.ok("UserCourse deleted sucessfully");
-	}
-
 }

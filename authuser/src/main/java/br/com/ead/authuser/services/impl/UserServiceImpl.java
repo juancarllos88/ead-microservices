@@ -21,16 +21,18 @@ import org.springframework.transaction.annotation.Transactional;
 import br.com.ead.authuser.clients.CourseClient;
 import br.com.ead.authuser.controllers.UserController;
 import br.com.ead.authuser.dto.UserDto;
+import br.com.ead.authuser.dto.events.UserEventDto;
+import br.com.ead.authuser.enums.ActionType;
 import br.com.ead.authuser.enums.UserStatus;
 import br.com.ead.authuser.enums.UserType;
 import br.com.ead.authuser.exceptions.EmailExistsException;
 import br.com.ead.authuser.exceptions.EntityModelNotFoundException;
 import br.com.ead.authuser.exceptions.MismatchedPasswordException;
 import br.com.ead.authuser.exceptions.UserNameExistsException;
-import br.com.ead.authuser.models.UserCourseModel;
 import br.com.ead.authuser.models.UserModel;
-import br.com.ead.authuser.repositories.UserCourseRepository;
+import br.com.ead.authuser.publishers.UserEventPublisher;
 import br.com.ead.authuser.repositories.UserRepository;
+import br.com.ead.authuser.services.ConverterService;
 import br.com.ead.authuser.services.UserService;
 import lombok.extern.log4j.Log4j2;
 
@@ -39,7 +41,10 @@ import lombok.extern.log4j.Log4j2;
 public class UserServiceImpl implements UserService {
 
 	@Autowired
-	private UserCourseRepository userCourseRepository;
+	private UserEventPublisher userEventPublisher;
+	
+	@Autowired
+	private ConverterService converterService;
 	
 	@Autowired
 	private CourseClient courseClient;
@@ -68,11 +73,12 @@ public class UserServiceImpl implements UserService {
 	@Transactional
 	public void delete(UUID id) {
 		UserModel user = findOne(id);
-		Optional<List<UserCourseModel>> userCourseModel = userCourseRepository.findByUser(user);
-		if(userCourseModel.isPresent()) {
-			userCourseRepository.deleteAll(userCourseModel.get());
-		}
+//		Optional<List<UserCourseModel>> userCourseModel = userCourseRepository.findByUser(user);
+//		if(userCourseModel.isPresent()) {
+//			userCourseRepository.deleteAll(userCourseModel.get());
+//		}
 		repository.delete(user);
+		userEventPublisher.publishUserEvent(converterService.convert(user, UserEventDto.class), ActionType.DELETE);
 		courseClient.deleteUserInCourse(id);
 
 	}
@@ -90,6 +96,7 @@ public class UserServiceImpl implements UserService {
 		userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
 		UserModel userModelSaved = repository.save(userModel);
 		log.info("UserModel saved with id {}", userModelSaved.getId());
+		userEventPublisher.publishUserEvent(converterService.convert(userModelSaved, UserEventDto.class), ActionType.CREATE);
 		return userModelSaved;
 	}
 
@@ -115,8 +122,9 @@ public class UserServiceImpl implements UserService {
 		user.setPhoneNumber(Objects.nonNull(userDto.getPhoneNumber()) ? userDto.getPhoneNumber() : user.getPhoneNumber());
 		user.setCpf(Objects.nonNull(userDto.getCpf()) ? userDto.getCpf() : user.getCpf());
 		user.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
-		return repository.save(user);
-
+		user = repository.save(user);
+		userEventPublisher.publishUserEvent(converterService.convert(user, UserEventDto.class), ActionType.UPDATE);
+		return user;
 	}
 
 	@Override
@@ -155,7 +163,9 @@ public class UserServiceImpl implements UserService {
 		UserModel userModel = findOne(userId);
 		userModel.setType(UserType.INSTRUCTOR);
 		userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
-		return repository.save(userModel);
+		userModel = repository.save(userModel);
+		userEventPublisher.publishUserEvent(converterService.convert(userModel, UserEventDto.class), ActionType.UPDATE);
+		return userModel;
 	}
 
 }

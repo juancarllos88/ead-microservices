@@ -19,6 +19,8 @@ spring:
     properties:
       hibernate:
         show_sql: true
+  rabbitmq:
+    addresses: amqp://admin:admin@localhost:5672
         
 logging:
   level:
@@ -28,9 +30,17 @@ logging:
     org.springframework.web: DEBUG
     org.hibernate: INFO
     
-api:
-  url:
-    course: 'http://ead-course-service/ead-course'    
+ead:
+  api:
+    url:
+      course: 'http://ead-course-service/ead-course'
+  broker:
+    exchange:
+      userEvent: ead.userevent
+    queue:
+      userEvent:
+        course: ead.userevent.ms.course    
+       
     
 eureka:
   client:
