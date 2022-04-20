@@ -1,5 +1,7 @@
 package br.com.ead.authuser.configuration;
 
+import java.time.Duration;
+
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +14,11 @@ public class RestTemplateConfig {
 	@LoadBalanced
 	@Bean
 	public RestTemplate restTemplate(RestTemplateBuilder builder) {
-		return builder.build();
+		return builder
+				.setConnectTimeout(Duration.ofMillis(5000))
+				.setReadTimeout(Duration.ofMillis(5000))
+				.build();
 	}
+	
+	
 }
