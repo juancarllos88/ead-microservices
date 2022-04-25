@@ -1,0 +1,20 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: ead-config-server
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/juancarllos88/ead-microservices-config
+          default-label: main  
+    
+    
+eureka:
+  client:
+    service-url:
+      default-zone: 'http://localhost:8761/eureka'
+  instance:
+    hostname: localhost
