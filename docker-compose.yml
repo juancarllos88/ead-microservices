@@ -1,37 +1,90 @@
 version: "3"
 
 services:
-  postgres-decoder-ead-authuser:
-    container_name: postgres-decoder-ead-authuser
+  postgres-decoder:
+    container_name: postgres-decoder
     image: postgres:13.3-alpine
     environment:
-      - POSTGRES_DB=ead-authuser
-      - POSTGRES_USER=ead-authuser
-      - POSTGRES_PASSWORD=ead-authuser
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_MULTIPLE_DATABASES="authuser","course","notification"
     ports:
       - "5432:5432"
     networks:
       - backend-decoder
     volumes:
+      - ./init/init.sql:/docker-entrypoint-initdb.d/init.sql
       - pg-data-decoder:/var/lib/postgresql/data
 
-  postgres-decoder-ead-course:
-    container_name: postgres-decoder-ead-course
-    image: postgres:13.3-alpine
-    environment:
-      - POSTGRES_DB=ead-course
-      - POSTGRES_USER=ead-course
-      - POSTGRES_PASSWORD=ead-course
+  rabbitmq-decoder:
+    container_name: rabbitmq-decoder
+    image: 'rabbitmq:3-management'
+    volumes:
+      - dados-rabbitmq:/var/lib/rabbitmq/
     ports:
-      - "5431:5432"
+      - '5672:5672'
+      - '15672:15672'
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+
+  eureka-decoder:
+    container_name: eureka-decoder
+    image: eureka-decoder:latest  
+    build:
+      context: "./service-registry"
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
     networks:
       - backend-decoder
-    volumes:
-      - pg-data-decoder-course:/var/lib/postgresql/data
+    environment:
+      eureka.instance.hostname: eureka-decoder
+      eureka.client.serviceUrl.defaultZone: http://eureka-decoder:8761/eureka 
+      
+
+  api-gateway-decoder:
+    container_name: api-gateway-decoder
+    image: juancarllos88/api-gateway:latest  
+    ports:
+      - "8080:8080"
+    networks:
+      - backend-decoder
+    depends_on:
+      - eureka-decoder
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   
+    environment:
+      server.port: 8080
+      eureka.client.serviceUrl.defaultZone: http://eureka-decoder:8761/eureka
+      SPRING_CLOUD_GATEWAY_ROUTES[0]_ID: authuser-service
+      SPRING_CLOUD_GATEWAY_ROUTES[0]_URI: http://host.docker.internal:8087 # ver depois o load balance
+      SPRING_CLOUD_GATEWAY_ROUTES[0]_PREDICATES[0]: Path=/ead-authuser/**
+      SPRING_CLOUD_GATEWAY_ROUTES[1]_ID: course-service
+      SPRING_CLOUD_GATEWAY_ROUTES[1]_URI: http://host.docker.internal:8082
+      SPRING_CLOUD_GATEWAY_ROUTES[1]_PREDICATES[0]: Path=/ead-course/**
+      SPRING_CLOUD_GATEWAY_ROUTES[2]_ID: notification-service
+      SPRING_CLOUD_GATEWAY_ROUTES[2]_URI: http://host.docker.internal:8084 
+      SPRING_CLOUD_GATEWAY_ROUTES[2]_PREDICATES[0]: Path=/ead-notification/**
+
+  config-server-decoder:
+    container_name: config-server-decoder
+    image: juancarllos88/config-server:latest  
+    ports:
+      - "8888:8888"
+    networks:
+      - backend-decoder
+    depends_on:
+      - eureka-decoder
+    environment:
+      server.port: 8888
+      eureka.client.serviceUrl.defaultZone: http://eureka-decoder:8761/eureka
 
 networks:
   backend-decoder:
+    driver: bridge 
+    #driver: host  #recommended for use only in local development environment.
 
 volumes:
   pg-data-decoder:
-  pg-data-decoder-course:
+  dados-rabbitmq:

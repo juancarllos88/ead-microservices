@@ -59,9 +59,9 @@ public class CourseClient {
 	
 	public Page<CourseDto> retryFallback(UUID userId, Pageable pageable, Throwable t) {
 		log.error("Inside retry retryFallback, cause - {}", t.toString(),t);
-		List<CourseDto> list = new ArrayList<>();
+		List<CourseDto> list = new ArrayList<>(); 
 		return new PageImpl<>(list);
-				
+				 
 	}
 	
 	public Page<CourseDto> circuitBreakFallback(UUID userId, Pageable pageable, Throwable t) {

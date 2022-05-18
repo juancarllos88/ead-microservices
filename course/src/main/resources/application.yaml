@@ -7,9 +7,9 @@ spring:
   application:
     name: ead-course-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/ead-course
-    username: ead-authuser
-    password: ead-authuser
+    url: jdbc:postgresql://localhost:5432/course
+    username: postgres
+    password: postgres
   jpa:
     hibernate:
       ddl-auto: update
@@ -30,9 +30,12 @@ ead:
   broker:
     exchange:
       userEvent: ead.userevent
+      notificationCommand: ead.notificationcommand
     queue:
       userEvent:
-        course: ead.userevent.ms.course            
+        course: ead.userevent.ms.course
+    routingKey:
+      notificationCommand: ms.subscription.notification              
           
 eureka:
   client:

@@ -1,5 +1,7 @@
 package br.com.ead.authuser.controllers;
 
+import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,5 +94,5 @@ public class UserController {
 	public ResponseEntity<UserModel> subscriptionInstructor(@PathVariable UUID id) {
 		return ResponseEntity.status(HttpStatus.OK).body(userService.subscriptionInstructor(id));
 	}
-
+	
 }

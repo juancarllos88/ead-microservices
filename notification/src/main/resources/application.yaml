@@ -1,0 +1,75 @@
+server:
+  port: 8084
+  servlet:
+    context-path: '/ead-notification/'
+
+spring:
+  application:
+    name: ead-notification-service
+  config:
+    import: 'optional:configserver:'
+  cloud:
+    config:
+      discovery:
+        serviceId: ead-config-server
+  datasource:
+    url:  jdbc:postgresql://localhost:5432/notification
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+      jdbc:
+        lob.non-contextual-creation: true
+    properties:
+      hibernate:
+        show_sql: true
+  output:
+    ansi:
+      enabled: always
+  rabbitmq:
+    addresses: amqp://admin:admin@localhost:5672
+    listener:
+      simple:
+        retry:
+          enabled: true
+          initial-interval: 10s ##A mensagem deve ser repetida após um intervalo de 3s.
+          max-attempts: 1 ## A mensagem deve ser repetida no máximo 6 vezes. Depois disso, ele será enviado para a fila de mensagens mortas.
+          max-interval: 10s ## O intervalo de tempo máximo entre duas tentativas nunca deve exceder 10s.
+          multiplier: 2 ## O intervalo entre a segunda tentativa é multiplicado por 2. Mas esse intervalo nunca pode exceder o intervalo máximo. Portanto, os valores do intervalo de repetição serão 3s, 6s, 10s, 10s, 10s. Como 10 seg é o intervalo máximo especificado.
+
+
+logging:
+  level:
+    com.ead: TRACE
+    root: INFO
+    org.springframework.web: DEBUG
+    org.hibernate: INFO
+
+ead:
+  broker:
+    exchange:
+      notificationCommand: ead.notificationcommand
+      deadNotificationCommand: ead.dead.notificationcommand
+    queue:
+      notificationCommand: ead.notificationcommand.ms.notification
+      deadNotificationCommand: ead.notificationcommand.dx.notification
+    key:
+      notificationCommandRoutingKey: ms.*.notification
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - refresh
+          - health
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: 'http://localhost:8761/eureka'
+  instance:
+    hostname: localhost

@@ -1,5 +1,8 @@
 package br.com.ead.authuser.publishers;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,5 +27,5 @@ public class UserEventPublisher {
 		rabbitTemplate.convertAndSend(exchangeUserEvent, "", userEventDto);
 		log.info("Evento de {} enviado para o exchange {} . Payload: {}", actionType, exchangeUserEvent, userEventDto);
 	}
-
+	
 }

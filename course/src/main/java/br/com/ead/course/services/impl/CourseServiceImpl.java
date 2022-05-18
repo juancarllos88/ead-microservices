@@ -1,5 +1,6 @@
 package br.com.ead.course.services.impl;
 
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import br.com.ead.course.clients.UserClient;
 import br.com.ead.course.dto.CourseDto;
 import br.com.ead.course.dto.SubscriptionDto;
+import br.com.ead.course.dto.commands.NotificationCommandDto;
 import br.com.ead.course.enums.UserStatus;
 import br.com.ead.course.enums.UserType;
 import br.com.ead.course.exceptions.SubscriptionAlreadyExistsException;
@@ -24,12 +26,15 @@ import br.com.ead.course.models.CourseModel;
 import br.com.ead.course.models.LessonModel;
 import br.com.ead.course.models.ModuleModel;
 import br.com.ead.course.models.UserModel;
+import br.com.ead.course.publisher.NotificationCommandPublisher;
 import br.com.ead.course.repositories.CourseRepository;
 import br.com.ead.course.repositories.LessonRepository;
 import br.com.ead.course.repositories.ModuleRepository;
 import br.com.ead.course.services.CourseService;
 import br.com.ead.course.services.UserService;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 @Service
 public class CourseServiceImpl extends BaseServiceImpl<CourseModel> implements CourseService {
 
@@ -48,6 +53,9 @@ public class CourseServiceImpl extends BaseServiceImpl<CourseModel> implements C
 	
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+    private NotificationCommandPublisher notificationCommandPublisher;
 
 	@Override
 	protected CourseRepository getRepository() {
@@ -102,7 +110,7 @@ public class CourseServiceImpl extends BaseServiceImpl<CourseModel> implements C
 	@Override
 	@Transactional
 	public void subscriptionUserInCourse(UUID courseId, SubscriptionDto subscription) {
-		findOne(courseId);
+		CourseModel courseModel = findOne(courseId);
 		if (getRepository().existsByCourseAndUser(courseId, subscription.getUserId())) {
 			throw new SubscriptionAlreadyExistsException();
 		}
@@ -111,6 +119,15 @@ public class CourseServiceImpl extends BaseServiceImpl<CourseModel> implements C
 			throw new UserBlockedException();
 		}
 		getRepository().saveCourseUser(courseId, userModel.getId());
+		try {
+            var notificationCommandDto = new NotificationCommandDto();
+            notificationCommandDto.setTitle("Bem-Vindo(a) ao Curso: " + courseModel.getName());
+            notificationCommandDto.setMessage(userModel.getFullName() + " a sua inscrição foi realizada com sucesso!");
+            notificationCommandDto.setUserId(userModel.getId());
+            notificationCommandPublisher.publishNotificationCommand(notificationCommandDto);
+        } catch (Exception e) {
+            log.warn("Error sending notification in subscriptionUserInCourse");
+        }
 	}
 
 
