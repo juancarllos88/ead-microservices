@@ -27,14 +27,15 @@ public class NotificationConsumer {
 //			exchange = @Exchange(value = "${ead.broker.exchange.notificationCommand}",type = ExchangeTypes.TOPIC, ignoreDeclarationExceptions = "true"),
 //			key = "${ead.broker.key.notificationCommandRoutingKey}"))
 	@RabbitListener(queues = "${ead.broker.queue.notificationCommand}")
-	public void listen(@Payload NotificationCommandDto notification) throws RuntimeException{
+	public void listen(@Payload NotificationCommandDto notificationDto) throws RuntimeException{
 		//throw new RuntimeException("deu merda");
-		log.info("Command lido {}",notification.toString());
+		log.info("Message command read to subscription user in courser {}", notificationDto.toString());
+		notificationService.save(notificationDto);
 	}
 	
 	@RabbitListener(queues = "${ead.broker.queue.deadNotificationCommand}")
-	public void processFailedMessages(@Payload NotificationCommandDto notification) {
-		log.info("Dead Letter Queue {}",notification.toString());
+	public void processFailedMessages(@Payload NotificationCommandDto notificationDto) {
+		log.info("Message command processed from dead letter queue {}", notificationDto.toString());
 	}
 
 }

@@ -1,12 +1,26 @@
 package br.com.ead.notification.controller;
+
 import java.util.UUID;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.ead.notification.dto.NotificationCommandDto;
+import br.com.ead.notification.dto.NotificationDto;
+import br.com.ead.notification.model.NotificationModel;
 import br.com.ead.notification.publisher.CommandPublisher;
 import br.com.ead.notification.services.NotificationService;
 
@@ -14,44 +28,36 @@ import br.com.ead.notification.services.NotificationService;
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class NotificationController {
 
-    final NotificationService notificationService;
-    
-    @Autowired
-    private CommandPublisher commandPublisher;
+	final NotificationService notificationService;
 
-    public NotificationController(NotificationService notificationService) {
-        this.notificationService = notificationService;
-    }
+	@Autowired
+	private CommandPublisher commandPublisher;
 
-//    @GetMapping("/users/{userId}/notifications")
-//    public ResponseEntity<Page<NotificationModel>> getAllNotificationsByUser(@PathVariable(value="userId") UUID userId,
-//                                                                             @PageableDefault(page = 0, size = 10, sort = "notificationId", direction = Sort.Direction.ASC) Pageable pageable){
-//        return ResponseEntity.status(HttpStatus.OK).body(notificationService.findAllNotificationsByUser(userId, pageable));
-//    }
-//
-//    @PutMapping("/users/{userId}/notifications/{notificationId}")
-//    public ResponseEntity<Object> updateNotification(@PathVariable(value="userId") UUID userId,
-//                                                     @PathVariable(value="notificationId") UUID notificationId,
-//                                                     @RequestBody @Valid NotificationDto notificationDto){
-//        Optional<NotificationModel> notificationModelOptional =
-//                notificationService.findByNotificationIdAndUserId(notificationId, userId);
-//        if(notificationModelOptional.isEmpty()){
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Notification not found!");
-//        }
-//        notificationModelOptional.get().setNotificationStatus(notificationDto.getNotificationStatus());
-//        notificationService.saveNotification(notificationModelOptional.get());
-//        return ResponseEntity.status(HttpStatus.OK).body(notificationModelOptional.get());
-//    }
-    
-    @GetMapping("/notifications/send")
-	public String testMsg() {
-    	var dto = new NotificationCommandDto();
-    	dto.setUserId(UUID.randomUUID());
-    	dto.setMessage("opa");
-    	dto.setTitle("teste");
-    	commandPublisher.publishUserEvent(dto);
-		return "enviado";
+	public NotificationController(NotificationService notificationService) {
+		this.notificationService = notificationService;
 	}
 
+	@GetMapping("/users/{userId}/notifications")
+	public ResponseEntity<Page<NotificationModel>> findAllByUser(@PathVariable(value = "userId") UUID userId,
+			@PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+		return ResponseEntity.status(HttpStatus.OK).body(notificationService.findAllByUser(userId, pageable));
+	}
+
+	@PatchMapping("/users/{userId}/notifications/{notificationId}")
+	public ResponseEntity<NotificationModel> changeStatusNotification(@PathVariable(value = "userId") UUID userId,
+			@PathVariable(value = "id") UUID notificationId, @RequestBody @Valid NotificationDto notificationDto) {
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(notificationService.changeStatusNotification(userId, notificationId, notificationDto));
+	}
+
+	@GetMapping("/notifications/send")
+	public String testMsg() {
+		var dto = new NotificationCommandDto();
+		dto.setUserId(UUID.randomUUID());
+		dto.setMessage("opa");
+		dto.setTitle("teste");
+		commandPublisher.publishUserEvent(dto);
+		return "enviado";
+	}
 
 }
