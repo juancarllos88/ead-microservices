@@ -45,7 +45,7 @@ public class NotificationController {
 
 	@PatchMapping("/users/{userId}/notifications/{notificationId}")
 	public ResponseEntity<NotificationModel> changeStatusNotification(@PathVariable(value = "userId") UUID userId,
-			@PathVariable(value = "id") UUID notificationId, @RequestBody @Valid NotificationDto notificationDto) {
+			@PathVariable(value = "notificationId") UUID notificationId, @RequestBody @Valid NotificationDto notificationDto) {
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(notificationService.changeStatusNotification(userId, notificationId, notificationDto));
 	}
