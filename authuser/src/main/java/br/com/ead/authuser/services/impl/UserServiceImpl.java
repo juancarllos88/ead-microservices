@@ -8,6 +8,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.BeanUtils;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,16 +25,19 @@ import br.com.ead.authuser.controllers.UserController;
 import br.com.ead.authuser.dto.UserDto;
 import br.com.ead.authuser.dto.events.UserEventDto;
 import br.com.ead.authuser.enums.ActionType;
+import br.com.ead.authuser.enums.RoleType;
 import br.com.ead.authuser.enums.UserStatus;
 import br.com.ead.authuser.enums.UserType;
 import br.com.ead.authuser.exceptions.EmailExistsException;
 import br.com.ead.authuser.exceptions.EntityModelNotFoundException;
 import br.com.ead.authuser.exceptions.MismatchedPasswordException;
 import br.com.ead.authuser.exceptions.UserNameExistsException;
+import br.com.ead.authuser.models.RoleModel;
 import br.com.ead.authuser.models.UserModel;
 import br.com.ead.authuser.publishers.UserEventPublisher;
 import br.com.ead.authuser.repositories.UserRepository;
 import br.com.ead.authuser.services.ConverterService;
+import br.com.ead.authuser.services.RoleService;
 import br.com.ead.authuser.services.UserService;
 import lombok.extern.log4j.Log4j2;
 
@@ -48,6 +53,12 @@ public class UserServiceImpl implements UserService {
 	
 	@Autowired
 	private CourseClient courseClient;
+	
+	@Autowired
+	private RoleService roleService;
+	
+	@Autowired
+	private PasswordEncoder encoder;
 	
 	private final UserRepository repository;
 
@@ -88,12 +99,15 @@ public class UserServiceImpl implements UserService {
 	public UserModel save(UserDto userDto) {
 		log.debug("UserDto from request {}", userDto.toString());
 		fieldsValidation(userDto.getUserName(), userDto.getEmail());
+		RoleModel roleModel = roleService.findByName(RoleType.ROLE_STUDENT).orElseThrow(() -> new RuntimeException("Role is not found"));
 		var userModel = new UserModel();
+		userDto.setPassword(encoder.encode(userDto.getPassword()));
 		BeanUtils.copyProperties(userDto, userModel);
 		userModel.setStatus(UserStatus.ACTIVE);
 		userModel.setType(UserType.STUDENT);
 		userModel.setCreationDate(LocalDateTime.now(ZoneId.of("UTC")));
 		userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
+		userModel.getRoles().add(roleModel);
 		UserModel userModelSaved = repository.save(userModel);
 		log.info("UserModel saved with id {}", userModelSaved.getId());
 		userEventPublisher.publishUserEvent(converterService.convert(userModelSaved, UserEventDto.class), ActionType.CREATE);

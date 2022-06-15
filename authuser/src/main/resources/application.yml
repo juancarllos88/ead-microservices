@@ -28,6 +28,8 @@ spring:
         show_sql: true
   rabbitmq:
     addresses: amqp://admin:admin@localhost:5672
+  flyway:
+    enabled: false
 
 logging:
   level:
@@ -47,11 +49,16 @@ ead:
     queue:
       userEvent:
         course: ead.userevent.ms.course
+  serviceRegistry:
+    username: ead
+    password: ead      
 
 eureka:
   client:
     service-url:
       default-zone: "http://localhost:8087/eureka"
+      # quando service-registry tiver com spring security ativado
+      #default-zone: "http://${ead.serviceRegistry.username}:${ead.serviceRegistry.password}@localhost:8761/eureka"
   instance:
     hostname: localhost
 
@@ -77,4 +84,6 @@ management:
       exposure:
         include:
           - refresh
-          - health                 
+          - health
+          
+             
