@@ -17,7 +17,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class UserDetailsImpl implements UserDetails{
+public class UserDetailsImpl implements UserDetails {
 
 	private static final long serialVersionUID = 1L;
 	private UUID id;
@@ -27,15 +27,14 @@ public class UserDetailsImpl implements UserDetails{
 	private String password;
 	private String email;
 	private Collection<? extends GrantedAuthority> authorities;
-	
-	
+
 	public static UserDetailsImpl build(UserModel userModel) {
 		List<GrantedAuthority> authorities = userModel.getRoles().stream()
 				.map(role -> new SimpleGrantedAuthority(role.getAuthority())).collect(Collectors.toList());
 		return new UserDetailsImpl(userModel.getId(), userModel.getFullName(), userModel.getUserName(),
 				userModel.getPassword(), userModel.getEmail(), authorities);
 	}
-	
+
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		return this.authorities;

@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -33,6 +35,20 @@ public class ApplicationExceptionHandler extends ResponseEntityExceptionHandler 
 		return handleException(ex, HttpStatus.INTERNAL_SERVER_ERROR, request, "internal.server.error");
 	}
 	
+	@ExceptionHandler({ UserNotAuthorizedException.class })
+	public ResponseEntity<Object> handleUserNotAuthorizedException(RuntimeException ex, WebRequest request) {
+		return handleException(ex, HttpStatus.FORBIDDEN, request, "user.not.authorized.exception");
+	}
+	
+	@ExceptionHandler({ AccessDeniedException.class })
+	public ResponseEntity<Object> handleAccessDeniedException(RuntimeException ex, WebRequest request) {
+		return handleException(ex, HttpStatus.FORBIDDEN, request, "access.denied");
+	}
+	
+	@ExceptionHandler({ BadCredentialsException.class })
+	public ResponseEntity<Object> handleBadCredentialsException(RuntimeException ex, WebRequest request) {
+		return handleException(ex, HttpStatus.UNAUTHORIZED, request, "bad.credentials");
+	}
 	@ExceptionHandler({ SubscriptionAlreadyExistsException.class })
 	public ResponseEntity<Object> handleSubscriptionAlreadyExistsException(RuntimeException ex, WebRequest request) {
 		return handleException(ex, HttpStatus.CONFLICT, request, "subscription.alread.exists");

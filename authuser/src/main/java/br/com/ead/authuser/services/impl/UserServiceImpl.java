@@ -8,7 +8,6 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.BeanUtils;
@@ -16,12 +15,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.ead.authuser.clients.CourseClient;
+import br.com.ead.authuser.configuration.security.AuthenticationCurrentUserService;
+import br.com.ead.authuser.configuration.security.JwtProvider;
+import br.com.ead.authuser.configuration.security.UserDetailsImpl;
 import br.com.ead.authuser.controllers.UserController;
+import br.com.ead.authuser.dto.LoginDto;
 import br.com.ead.authuser.dto.UserDto;
 import br.com.ead.authuser.dto.events.UserEventDto;
 import br.com.ead.authuser.enums.ActionType;
@@ -32,6 +40,7 @@ import br.com.ead.authuser.exceptions.EmailExistsException;
 import br.com.ead.authuser.exceptions.EntityModelNotFoundException;
 import br.com.ead.authuser.exceptions.MismatchedPasswordException;
 import br.com.ead.authuser.exceptions.UserNameExistsException;
+import br.com.ead.authuser.exceptions.UserNotAuthorizedException;
 import br.com.ead.authuser.models.RoleModel;
 import br.com.ead.authuser.models.UserModel;
 import br.com.ead.authuser.publishers.UserEventPublisher;
@@ -59,6 +68,15 @@ public class UserServiceImpl implements UserService {
 	
 	@Autowired
 	private PasswordEncoder encoder;
+
+	@Autowired
+	private AuthenticationManager authenticationManager;
+	
+	@Autowired
+	private JwtProvider jwtProvider;
+
+	@Autowired
+	private AuthenticationCurrentUserService authenticationCurrentUserService;
 	
 	private final UserRepository repository;
 
@@ -70,6 +88,17 @@ public class UserServiceImpl implements UserService {
 	@Transactional
 	public List<UserModel> findAll() {
 		return repository.findAll();
+
+	}
+	
+	@Override
+	@Transactional
+	public UserModel findById(UUID id) {
+		UserDetailsImpl currentUser = authenticationCurrentUserService.getCurrentUser();
+		if(!id.equals(currentUser.getId())) {
+			throw new AccessDeniedException("Forbidden");
+		}
+		return repository.findById(id).orElseThrow(() -> new EntityModelNotFoundException());
 
 	}
 
@@ -166,20 +195,33 @@ public class UserServiceImpl implements UserService {
 		Page<UserModel> users = repository.findAll(specification,pageable);
 		if(!users.isEmpty()) {
 			for (UserModel user : users) {
-				user.add(linkTo(methodOn(UserController.class).findOne(user.getId())).withSelfRel());
+				user.add(linkTo(methodOn(UserController.class).find(user.getId())).withSelfRel());
 			}
 		}
 		return users;
 	}
 
+	@Transactional
 	@Override
 	public UserModel subscriptionInstructor(UUID userId) {
 		UserModel userModel = findOne(userId);
+		RoleModel roleModel = roleService.findByName(RoleType.ROLE_INSTRUCTOR)
+				.orElseThrow(() -> new RuntimeException("Role is not found"));
 		userModel.setType(UserType.INSTRUCTOR);
 		userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
+		userModel.getRoles().add(roleModel);
 		userModel = repository.save(userModel);
 		userEventPublisher.publishUserEvent(converterService.convert(userModel, UserEventDto.class), ActionType.UPDATE);
 		return userModel;
+	}
+
+	@Override
+	public String authenticate(LoginDto loginDto) {
+		Authentication authentication = authenticationManager
+				.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getUserName(), loginDto.getPassword()));
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		String jwt = jwtProvider.generateJwt(authentication);
+		return jwt;
 	}
 
 }

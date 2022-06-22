@@ -10,11 +10,14 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
+
 
 import br.com.ead.authuser.dto.CourseDto;
 import br.com.ead.authuser.dto.ResponsePageDto;
@@ -38,24 +41,29 @@ public class CourseClient {
 
 	//@Retry(name = "retryInstance", fallbackMethod = "retryFallback")
 	@CircuitBreaker(name = "circuitbreakerInstance", fallbackMethod = "circuitBreakFallback")
-	public Page<CourseDto> getAllCoursesByUser(UUID userId, Pageable pageable) {
+	public Page<CourseDto> getAllCoursesByUser(UUID userId, Pageable pageable, String token) {
 		System.out.println("CHAMANDO O SERVICO");
 		List<CourseDto> searchResult = null;
 		String url = REQUEST_URI + utilsServiceImpl.createUrlGetAllCoursesByUser(userId, pageable);
 		ResponseEntity<ResponsePageDto<CourseDto>> result = null;
-        log.debug("Request URL: {} ", url);
         log.info("Request URL: {} ", url);
         try{
             ParameterizedTypeReference<ResponsePageDto<CourseDto>> responseType = new ParameterizedTypeReference<ResponsePageDto<CourseDto>>() {};
-            result = restTemplate.exchange(url, HttpMethod.GET, null, responseType);
+            result = restTemplate.exchange(url, HttpMethod.GET, buildHeader(token) , responseType);
             searchResult = result.getBody().getContent();
-            log.debug("Response Number of Elements: {} ", searchResult.size());
+            log.info("Response Number of Elements: {} ", searchResult.size());
         } catch (HttpStatusCodeException e){
             log.error("Error request /courses {} ", e);
         }
         log.info("Ending request /courses userId {} ", userId);
         return result.getBody();
     }
+	
+	public HttpEntity<String> buildHeader(String token) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Authorization", token);
+		return new HttpEntity<String>("parameters",headers);
+	}
 	
 	public Page<CourseDto> retryFallback(UUID userId, Pageable pageable, Throwable t) {
 		log.error("Inside retry retryFallback, cause - {}", t.toString(),t);
@@ -64,7 +72,7 @@ public class CourseClient {
 				 
 	}
 	
-	public Page<CourseDto> circuitBreakFallback(UUID userId, Pageable pageable, Throwable t) {
+	public Page<CourseDto> circuitBreakFallback(UUID userId, Pageable pageable, String token, Throwable t) {
 		log.error("circuit break open,s circuitBreakFallback, cause - {}", t.toString());
 		List<CourseDto> list = new ArrayList<>();
 		return new PageImpl<>(list);

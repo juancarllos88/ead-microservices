@@ -21,7 +21,15 @@ spring:
         show_sql: true
   rabbitmq:
     addresses: amqp://admin:admin@localhost:5672
-      
+   
+logging:
+  level:
+    # TRACE>DEBUG>INFO>WARN>ERROR>FATAL>OFF
+    br.com.ead: TRACE
+    #root: DEBUG
+    #DETALHES DE REQUEST WEB
+    #org.springframework.web: DEBUG
+    org.hibernate: INFO      
           
 ead:
   api:
@@ -35,7 +43,9 @@ ead:
       userEvent:
         course: ead.userevent.ms.course
     routingKey:
-      notificationCommand: ms.subscription.notification              
+      notificationCommand: ms.subscription.notification
+  auth:
+    jwtSecret: ead-projeto-decoder                   
           
 eureka:
   client:

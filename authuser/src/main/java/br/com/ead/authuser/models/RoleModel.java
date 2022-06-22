@@ -45,12 +45,12 @@ public class RoleModel implements GrantedAuthority, Serializable{
 	@Enumerated(EnumType.STRING)
 	private RoleType name;
 	
-//	@EqualsAndHashCode.Exclude
-//	@ToString.Exclude
-//	@ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
-//	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-//	private Set<UserModel> users;
-	
+ /*	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
+	@ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+	private Set<UserModel> users;
+ */	
 	
 	@Override
 	@JsonIgnore

@@ -42,9 +42,11 @@ spring:
 
 logging:
   level:
-    com.ead: TRACE
-    root: INFO
-    org.springframework.web: DEBUG
+    # TRACE>DEBUG>INFO>WARN>ERROR>FATAL>OFF
+    br.com.ead: TRACE
+    #root: DEBUG
+    #DETALHES DE REQUEST WEB
+    #org.springframework.web: DEBUG
     org.hibernate: INFO
 
 ead:
@@ -57,6 +59,8 @@ ead:
       deadNotificationCommand: ead.notificationcommand.dx.notification
     key:
       notificationCommandRoutingKey: ms.*.notification
+  auth:
+    jwtSecret: ead-projeto-decoder  
 
 
 management:

@@ -33,10 +33,11 @@ spring:
 
 logging:
   level:
+    # TRACE>DEBUG>INFO>WARN>ERROR>FATAL>OFF
     br.com.ead: TRACE
     #root: DEBUG
     #DETALHES DE REQUEST WEB
-    org.springframework.web: DEBUG
+    #org.springframework.web: DEBUG
     org.hibernate: INFO
 
 ead:
@@ -51,7 +52,10 @@ ead:
         course: ead.userevent.ms.course
   serviceRegistry:
     username: ead
-    password: ead      
+    password: ead
+  auth:
+    jwtSecret: ead-projeto-decoder
+    jwtExpiration: 3600000
 
 eureka:
   client:

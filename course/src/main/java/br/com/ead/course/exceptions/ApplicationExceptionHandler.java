@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -33,6 +34,10 @@ public class ApplicationExceptionHandler extends ResponseEntityExceptionHandler 
 		return handleException(ex, HttpStatus.INTERNAL_SERVER_ERROR, request, "internal.server.error");
 	}
 	
+	@ExceptionHandler({ AccessDeniedException.class })
+	public ResponseEntity<Object> handleAccessDeniedException(RuntimeException ex, WebRequest request) {
+		return handleException(ex, HttpStatus.FORBIDDEN, request, "access.denied");
+	}
 
 	@ExceptionHandler({ EntityModelNotFoundException.class })
 	public ResponseEntity<Object> handleEntityModelNotFoundException(RuntimeException ex, WebRequest request) {

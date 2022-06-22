@@ -1,7 +1,5 @@
 package br.com.ead.authuser.controllers;
 
-import java.math.BigDecimal;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +9,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,11 +21,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
+import br.com.ead.authuser.configuration.security.UserDetailsImpl;
 import br.com.ead.authuser.dto.UserDto;
 import br.com.ead.authuser.dto.UserDto.UserView;
 import br.com.ead.authuser.dto.events.UserEventDto;
@@ -53,16 +54,20 @@ public class UserController {
 		return ResponseEntity.status(HttpStatus.OK).body("Mensagem Enviada");
 	}
 
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	@GetMapping
-	public ResponseEntity<Page<UserModel>> findAll(SpecificationTemplate.UserSpec specification, 
-			@PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+	public ResponseEntity<Page<UserModel>> findAll(SpecificationTemplate.UserSpec specification,
+			@PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+			Authentication authentication) {
+		UserDetails userDetails = (UserDetailsImpl) authentication.getPrincipal();
 		Page<UserModel> userModelPage = userService.findAll(pageable, specification);
 		return ResponseEntity.status(HttpStatus.OK).body(userModelPage);
 	}
 
+	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping("/{id}")
-	public ResponseEntity<UserModel> findOne(@PathVariable UUID id) {
-		return ResponseEntity.status(HttpStatus.OK).body(userService.findOne(id));
+	public ResponseEntity<UserModel> find(@PathVariable UUID id) {
+		return ResponseEntity.status(HttpStatus.OK).body(userService.findById(id));
 	}
 
 	@DeleteMapping("/{id}")
@@ -90,6 +95,7 @@ public class UserController {
 		return ResponseEntity.status(HttpStatus.OK).body(userService.updateImage(id, userDto));
 	}
 	
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	@PatchMapping("/{id}/instructors/subscription")
 	public ResponseEntity<UserModel> subscriptionInstructor(@PathVariable UUID id) {
 		return ResponseEntity.status(HttpStatus.OK).body(userService.subscriptionInstructor(id));
