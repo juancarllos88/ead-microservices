@@ -1,5 +1,5 @@
 server:
-  port: 8087
+  port: ${PORT:8087}
   servlet:
     context-path: "/ead-authuser/"
 
@@ -14,9 +14,9 @@ spring:
       discovery:
         serviceId: ead-config-server
   datasource:
-    url: jdbc:postgresql://localhost:5432/authuser
-    username: postgres
-    password: postgres
+    url: ${JDBC_DATABASE_URL:jdbc:postgresql://localhost:5432/authuser}
+    username: ${JDBC_DATABASE_USERNAME:postgres}
+    password: ${JDBC_DATABASE_PASSWORD:postgres}
   jpa:
     hibernate:
       ddl-auto: update
@@ -27,7 +27,7 @@ spring:
       hibernate:
         show_sql: true
   rabbitmq:
-    addresses: amqp://admin:admin@localhost:5672
+    addresses: ${CLOUDAMQP_URL:amqp://admin:admin@localhost:5672}
   flyway:
     enabled: false
 
@@ -51,20 +51,21 @@ ead:
       userEvent:
         course: ead.userevent.ms.course
   serviceRegistry:
-    username: ead
-    password: ead
+    username: ${EUREKA_USERNAME:ead}
+    password: ${EUREKA_PASSWORD:ead}
   auth:
-    jwtSecret: ead-projeto-decoder
+    jwtSecret: ${JWT_SECRET:ead-projeto-decoder}
     jwtExpiration: 3600000
 
 eureka:
   client:
     service-url:
-      default-zone: "http://localhost:8087/eureka"
-      # quando service-registry tiver com spring security ativado
-      #default-zone: "http://${ead.serviceRegistry.username}:${ead.serviceRegistry.password}@localhost:8761/eureka"
+      #default-zone: "http://localhost:8087/eureka"
+      #quando service-registry tiver com spring security ativado
+      default-zone: ${EUREKA_URL:http://${ead.serviceRegistry.username}:${ead.serviceRegistry.password}@localhost:8761/eureka}
   instance:
-    hostname: localhost
+    hostname: ${APP_DOMAIN_NAME:localhost}
+    non-secure-port: 80 ##em dev remover essa linha - so para o heroku
 
 resilience4j:
   retry:
