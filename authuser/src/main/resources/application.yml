@@ -60,12 +60,10 @@ ead:
 eureka:
   client:
     service-url:
-      #default-zone: "http://localhost:8087/eureka"
-      #quando service-registry tiver com spring security ativado
-      default-zone: ${EUREKA_URL:http://${ead.serviceRegistry.username}:${ead.serviceRegistry.password}@localhost:8761/eureka}
+      defaultZone: ${EUREKA_URL:http://${ead.serviceRegistry.username}:${ead.serviceRegistry.password}@localhost:8761/eureka}
   instance:
     hostname: ${APP_DOMAIN_NAME:localhost}
-    non-secure-port: 80 ##em dev remover essa linha - so para o heroku
+    non-secure-port: 80
 
 resilience4j:
   retry:
