@@ -1,6 +1,52 @@
-version: "3"
+version: "3.9"
 
 services:
+
+  filebeat:
+    container_name: filebeat-decoder
+    image: docker.elastic.co/beats/filebeat:7.16.3
+    user: root
+    entrypoint: "filebeat -e -strict.perms=false"
+    volumes:
+      - ./elk/filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./elk/log-app/authuser:/usr/share/filebeat/logs/authuser
+      - ./elk/log-app/course:/usr/share/filebeat/logs/course
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      KIBANA_URL: http://kibana:5601  
+    depends_on:
+      - elasticsearch
+      - kibana
+
+  elasticsearch:
+    container_name: elasticsearch-decoder
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    configs:
+      - source: elastic_config
+        target: /usr/share/elasticsearch/config/elasticsearch.yml  
+    environment:
+      discovery.type: "single-node"
+      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+      xpack.monitoring.enabled: "true"
+    volumes:
+      - dados-elasticsearch:/usr/share/elasticsearch/data
+      
+  kibana:
+    container_name: kibana-decoder
+    image: docker.elastic.co/kibana/kibana:7.16.3
+    ports:
+      - "5601:5601"
+    configs:
+      - source: kibana_config
+        target: /usr/share/kibana/config/kibana.yml  
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+
   postgres-decoder:
     container_name: postgres-decoder
     image: postgres:13.3-alpine
@@ -88,3 +134,10 @@ networks:
 volumes:
   pg-data-decoder:
   dados-rabbitmq:
+  dados-elasticsearch:
+
+configs:
+  elastic_config:
+    file: ./elk/elasticsearch/config/elasticsearch.yml
+  kibana_config:
+    file: ./elk/kibana/config/kibana.yml  
