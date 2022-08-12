@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -17,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
+
 
 
 import br.com.ead.authuser.dto.CourseDto;
@@ -38,15 +41,16 @@ public class CourseClient {
 	
 	@Value("${ead.api.url.course}")
 	private String REQUEST_URI;
+	
+	private static Logger logg = LoggerFactory.getLogger(CourseClient.class);
 
 	//@Retry(name = "retryInstance", fallbackMethod = "retryFallback")
 	@CircuitBreaker(name = "circuitbreakerInstance", fallbackMethod = "circuitBreakFallback")
 	public Page<CourseDto> getAllCoursesByUser(UUID userId, Pageable pageable, String token) {
-		System.out.println("CHAMANDO O SERVICO");
 		List<CourseDto> searchResult = null;
 		String url = REQUEST_URI + utilsServiceImpl.createUrlGetAllCoursesByUser(userId, pageable);
 		ResponseEntity<ResponsePageDto<CourseDto>> result = null;
-        log.info("Request URL: {} ", url);
+        log.info("Calling service course ead: {} ", url);
         try{
             ParameterizedTypeReference<ResponsePageDto<CourseDto>> responseType = new ParameterizedTypeReference<ResponsePageDto<CourseDto>>() {};
             result = restTemplate.exchange(url, HttpMethod.GET, buildHeader(token) , responseType);
@@ -54,6 +58,9 @@ public class CourseClient {
             log.info("Response Number of Elements: {} ", searchResult.size());
         } catch (HttpStatusCodeException e){
             log.error("Error request /courses {} ", e);
+        } catch (Exception e){
+            log.error("Erro to call service course ead");
+            throw e;
         }
         log.info("Ending request /courses userId {} ", userId);
         return result.getBody();

@@ -32,6 +32,7 @@ spring:
     addresses: amqp://admin:admin@localhost:5672
     listener:
       simple:
+        default-requeue-rejected: 'false' ##desabilita o reenvio da mensagem novamente para fila em caso de erro
         retry:
           enabled: true
           initial-interval: 10s ##A mensagem deve ser repetida após um intervalo de 3s.

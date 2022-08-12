@@ -5,6 +5,8 @@ spring:
   application:
     name: ead-api-gateway
   cloud:
+    loadbalancer:
+      enabled: true
     gateway:
       routes:
       - id: authuser-service

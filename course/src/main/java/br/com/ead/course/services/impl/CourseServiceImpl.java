@@ -90,6 +90,7 @@ public class CourseServiceImpl extends BaseServiceImpl<CourseModel> implements C
 	@Override
 	@Transactional
 	public Page<CourseModel> findAll(Pageable pageable, Specification<CourseModel> specification) {
+		log.info("get all courses");
 		return courseRepository.findAll(specification,pageable);
 	}
 	

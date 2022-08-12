@@ -10,6 +10,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -53,6 +55,8 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @Service
 public class UserServiceImpl implements UserService {
+	
+	private static Logger logg = LoggerFactory.getLogger(CourseClient.class);
 
 	@Autowired
 	private UserEventPublisher userEventPublisher;
@@ -221,6 +225,8 @@ public class UserServiceImpl implements UserService {
 				.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getUserName(), loginDto.getPassword()));
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 		String jwt = jwtProvider.generateJwt(authentication);
+		log.info("Login from user {} with sucess",loginDto.getUserName());
+		logg.info("Login from user {} with sucess",loginDto.getUserName());
 		return jwt;
 	}
 

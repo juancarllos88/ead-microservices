@@ -1,0 +1,35 @@
+server:
+  port: ${PORT:8080}
+  
+spring:
+  application:
+    name: ead-api-gateway
+  cloud:
+    gateway:
+      routes:
+      - id: authuser-service
+        uri: lb://EAD-AUTHUSER-SERVICE
+        predicates:
+        - Path=/ead-authuser/**
+      - id: course-service
+        uri: lb://EAD-COURSE-SERVICE
+        predicates:
+        - Path=/ead-course/**
+      - id: notification-service
+        uri: lb://EAD-NOTIFICATION-SERVICE
+        predicates:
+        - Path=/ead-notification/**  
+
+ead:
+  serviceRegistry:
+    username: ${EUREKA_USERNAME:ead}
+    password: ${EUREKA_PASSWORD:ead} 
+        
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://${ead.serviceRegistry.username}:${ead.serviceRegistry.password}@localhost:8761/eureka}
+  instance:
+    hostname: ${APP_DOMAIN_NAME:localhost}
+#    non-secure-port: 80
+     

@@ -1,0 +1,94 @@
+server:
+  port: ${PORT:8087}
+  servlet:
+    context-path: "/ead-authuser/"
+
+spring:
+  application:
+    name: ead-authuser-service
+  config:
+    import:
+    - 'optional:configserver:'
+  cloud:
+    config:
+      discovery:
+        serviceId: ead-config-server
+  datasource:
+    url: ${JDBC_DATABASE_URL:jdbc:postgresql://localhost:5432/authuser}
+    username: ${JDBC_DATABASE_USERNAME:postgres}
+    password: ${JDBC_DATABASE_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: update
+      dialect: org.hibernate.dialect.PostgresSQLDialect
+      jdbc:
+        lob.non-contextual-creation: true
+    properties:
+      hibernate:
+        show_sql: true
+  rabbitmq:
+    addresses: ${CLOUDAMQP_URL:amqp://admin:admin@localhost:5672}
+  flyway:
+    enabled: false
+
+logging:
+  level:
+    # TRACE>DEBUG>INFO>WARN>ERROR>FATAL>OFF
+    # DEFAULT TRACE
+    br.com.ead: INFO
+    # DEFAULT COMENTADO E DEBUG
+    root: INFO
+    #DETALHES DE REQUEST WEB DEBUG
+    org.springframework.web: INFO
+    org.hibernate: INFO
+
+ead:
+  api:
+    url:
+      course: "http://ead-course-service/ead-course"
+  broker:
+    exchange:
+      userEvent: ead.userevent
+    queue:
+      userEvent:
+        course: ead.userevent.ms.course
+  serviceRegistry:
+    username: ${EUREKA_USERNAME:ead}
+    password: ${EUREKA_PASSWORD:ead}
+  auth:
+    jwtSecret: ${JWT_SECRET:ead-projeto-decoder}
+    jwtExpiration: 3600000
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://${ead.serviceRegistry.username}:${ead.serviceRegistry.password}@localhost:8761/eureka}
+  instance:
+    hostname: ${APP_DOMAIN_NAME:localhost}
+#    non-secure-port: 80
+
+resilience4j:
+  retry:
+    instances:
+      retryInstance:
+        max-retry-attempts: 3
+        wait-duration: 5s
+  circuitbreaker:
+    instances:
+      circuitbreakerInstance:
+        sliding-window-size: 30
+        permitted-number-of-calls-in-half-open-state: 2
+        sliding-window-type: TIME_BASED
+        minimum-number-of-calls: 2
+        wait-duration-in-open-state: 30s
+        failure-rate-threshold: 80
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - refresh
+          - health
+          
+             

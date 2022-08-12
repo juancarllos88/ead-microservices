@@ -1,0 +1,21 @@
+server:
+  port: ${PORT:8761}
+  
+spring:
+  application:
+    name: ead-service-registry
+    
+ead:
+  serviceRegistry:
+    username: ${EUREKA_USERNAME:ead}
+    password: ${EUREKA_PASSWORD:ead} 
+    
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: ${EUREKA_URL:http://${ead.serviceRegistry.username}:${ead.serviceRegistry.password}@localhost:8761/eureka}
+  instance:
+    hostname: ${APP_DOMAIN_NAME:localhost}
+#    non-secure-port: 80          

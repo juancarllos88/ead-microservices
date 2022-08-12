@@ -77,9 +77,9 @@ services:
   eureka-decoder:
     container_name: eureka-decoder
     image: eureka-decoder:latest  
-    build:
-      context: "./service-registry"
-      dockerfile: Dockerfile
+    # build:
+    #   context: "./service-registry"
+    #   dockerfile: Dockerfile
     ports:
       - "8761:8761"
     networks:
@@ -87,7 +87,8 @@ services:
     environment:
       eureka.instance.hostname: eureka-decoder
       eureka.client.serviceUrl.defaultZone: http://eureka-decoder:8761/eureka 
-      
+      eureka.renewalPercentThreshold: 0.85
+      #eureka.instance.preferIpAddress: "true"
 
   api-gateway-decoder:
     container_name: api-gateway-decoder
@@ -104,27 +105,67 @@ services:
       server.port: 8080
       eureka.client.serviceUrl.defaultZone: http://eureka-decoder:8761/eureka
       SPRING_CLOUD_GATEWAY_ROUTES[0]_ID: authuser-service
-      SPRING_CLOUD_GATEWAY_ROUTES[0]_URI: http://host.docker.internal:8087 # ver depois o load balance
+      SPRING_CLOUD_GATEWAY_ROUTES[0]_URI: http://host.docker.internal:8087 # ver depois o load balance 
       SPRING_CLOUD_GATEWAY_ROUTES[0]_PREDICATES[0]: Path=/ead-authuser/**
       SPRING_CLOUD_GATEWAY_ROUTES[1]_ID: course-service
       SPRING_CLOUD_GATEWAY_ROUTES[1]_URI: http://host.docker.internal:8082
       SPRING_CLOUD_GATEWAY_ROUTES[1]_PREDICATES[0]: Path=/ead-course/**
       SPRING_CLOUD_GATEWAY_ROUTES[2]_ID: notification-service
-      SPRING_CLOUD_GATEWAY_ROUTES[2]_URI: http://host.docker.internal:8084 
+      SPRING_CLOUD_GATEWAY_ROUTES[2]_URI: http://host.docker.internal:8084
       SPRING_CLOUD_GATEWAY_ROUTES[2]_PREDICATES[0]: Path=/ead-notification/**
 
-  config-server-decoder:
-    container_name: config-server-decoder
-    image: juancarllos88/config-server:latest  
+  authuser-decoder:
+    container_name: authuser-decoder
+    image: juancarllos88/authuser:latest
     ports:
-      - "8888:8888"
+      - "8087:8087"
     networks:
       - backend-decoder
     depends_on:
       - eureka-decoder
+      - api-gateway-decoder
     environment:
-      server.port: 8888
-      eureka.client.serviceUrl.defaultZone: http://eureka-decoder:8761/eureka
+      JDBC_DATABASE_URL: jdbc:postgresql://postgres-decoder:5432/authuser
+      JDBC_DATABASE_USERNAME: postgres
+      JDBC_DATABASE_PASSWORD: postgres
+      EUREKA_URL: http://eureka-decoder:8761/eureka
+      CLOUDAMQP_URL: amqp://admin:admin@rabbitmq-decoder:5672     
+
+  # config-server-decoder:
+  #   container_name: config-server-decoder
+  #   image: juancarllos88/config-server:latest  
+  #   ports:
+  #     - "8888:8888"
+  #   networks:
+  #     - backend-decoder
+  #   depends_on:
+  #     - eureka-decoder
+  #   environment:
+  #     server.port: 8888
+  #     eureka.client.serviceUrl.defaultZone: http://eureka-decoder:8761/eureka
+
+  prometheus-decoder:
+    container_name: prometheus-decoder
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - backend-decoder
+    ports:
+      - 9090:9090
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  grafana-decoder:
+    image: grafana/grafana:latest
+    container_name: grafana-decoder
+    ports:
+      - 3000:3000
+    networks:
+      - backend-decoder
+    depends_on:
+      - prometheus-decoder  
 
 networks:
   backend-decoder:
@@ -135,6 +176,7 @@ volumes:
   pg-data-decoder:
   dados-rabbitmq:
   dados-elasticsearch:
+  prometheus-data:
 
 configs:
   elastic_config:

@@ -30,6 +30,11 @@ spring:
     addresses: ${CLOUDAMQP_URL:amqp://admin:admin@localhost:5672}
   flyway:
     enabled: false
+  sleuth:
+    sampler:
+      probability: 1.0
+  zipkin:
+    base-url: http://localhost:9411  
 
 logging:
   level:
@@ -37,9 +42,9 @@ logging:
     # DEFAULT TRACE
     br.com.ead: INFO
     # DEFAULT COMENTADO E DEBUG
-    root: INFO
+    #root: INFO
     #DETALHES DE REQUEST WEB DEBUG
-    org.springframework.web: INFO
+    #org.springframework.web: DEBUG
     org.hibernate: INFO
 
 ead:
@@ -85,10 +90,19 @@ resilience4j:
 
 management:
   endpoints:
+    enabled-by-default: false
     web:
       exposure:
-        include:
-          - refresh
-          - health
+        include: "health,metrics,prometheus,refresh"
+  endpoint:
+    health:
+      enabled: true
+      show-details: always
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+    refresh:
+      enabled: true        
           
              

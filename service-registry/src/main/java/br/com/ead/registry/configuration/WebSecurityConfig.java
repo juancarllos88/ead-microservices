@@ -12,6 +12,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 	
+	private static final String[] WHITE_LIST_URL = {"/actuator/**"};
+	
 	@Value("${ead.serviceRegistry.username}")
 	private String username;
 	
@@ -23,6 +25,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 		http.httpBasic()
 		    .and()
 		    .authorizeRequests()
+		    .antMatchers(WHITE_LIST_URL).permitAll()
 		    .anyRequest().authenticated()
 		    .and()
 		    .csrf().disable()

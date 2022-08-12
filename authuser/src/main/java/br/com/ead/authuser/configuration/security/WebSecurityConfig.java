@@ -26,7 +26,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 	
-	private static final String[] WHITE_LIST_URL = {"/auth/**"};
+	private static final String[] WHITE_LIST_URL = {"/auth/**", "/actuator/**"};
 	
 	@Autowired
 	private UserDetailsService userDetailsService;
