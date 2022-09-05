@@ -165,7 +165,30 @@ services:
     networks:
       - backend-decoder
     depends_on:
-      - prometheus-decoder  
+      - prometheus-decoder
+
+  zipkin-decoder:
+    container_name: zipkin-decoder
+    image: openzipkin/zipkin
+    ports:
+      - 9411:9411
+
+  redis-decoder:
+    container_name: redis-decoder
+    image: redislabs/redismod
+    ports:
+      - 6379:6379
+
+  redisinsight-decoder:
+    container_name: redisinsight-decoder
+    image: redislabs/redisinsight:latest
+    ports:
+      - 8001:8001
+    volumes:
+      - redisinsight-data:/db 
+    depends_on:
+      - redis-decoder       
+
 
 networks:
   backend-decoder:
@@ -177,6 +200,7 @@ volumes:
   dados-rabbitmq:
   dados-elasticsearch:
   prometheus-data:
+  redisinsight-data:
 
 configs:
   elastic_config:

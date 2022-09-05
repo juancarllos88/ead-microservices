@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -42,7 +44,6 @@ import br.com.ead.authuser.exceptions.EmailExistsException;
 import br.com.ead.authuser.exceptions.EntityModelNotFoundException;
 import br.com.ead.authuser.exceptions.MismatchedPasswordException;
 import br.com.ead.authuser.exceptions.UserNameExistsException;
-import br.com.ead.authuser.exceptions.UserNotAuthorizedException;
 import br.com.ead.authuser.models.RoleModel;
 import br.com.ead.authuser.models.UserModel;
 import br.com.ead.authuser.publishers.UserEventPublisher;
@@ -97,6 +98,7 @@ public class UserServiceImpl implements UserService {
 	
 	@Override
 	@Transactional
+	//@Cacheable(cacheNames = "USer", key="#id")
 	public UserModel findById(UUID id) {
 		UserDetailsImpl currentUser = authenticationCurrentUserService.getCurrentUser();
 		if(!id.equals(currentUser.getId())) {
@@ -115,6 +117,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	@Transactional
+	//@CacheEvict(cacheNames = "User", key="#id	")
 	public void delete(UUID id) {
 		UserModel user = findOne(id);
 //		Optional<List<UserCourseModel>> userCourseModel = userCourseRepository.findByUser(user);
@@ -129,6 +132,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	@Transactional
+	//@CacheEvict(cacheNames = "User", allEntries = true)
 	public UserModel save(UserDto userDto) {
 		log.debug("UserDto from request {}", userDto.toString());
 		fieldsValidation(userDto.getUserName(), userDto.getEmail());
@@ -163,6 +167,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	@Transactional
+	//@CachePut(cacheNames = "User", key="#id")
 	public UserModel update(UUID id, UserDto userDto) {
 		var user = findOne(id);
 		user.setFullName(Objects.nonNull(userDto.getFullName()) ? userDto.getFullName() : user.getFullName());
@@ -195,6 +200,7 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
+	@Cacheable(cacheNames = "User", key = "#root.method.name")
 	public Page<UserModel> findAll(Pageable pageable,Specification<UserModel> specification) {
 		Page<UserModel> users = repository.findAll(specification,pageable);
 		if(!users.isEmpty()) {

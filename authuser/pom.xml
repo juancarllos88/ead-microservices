@@ -141,7 +141,11 @@
 		 <dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-sleuth-zipkin</artifactId>
-		</dependency> 
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-sleuth-brave</artifactId>
+		</dependency>  
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-sleuth</artifactId>
@@ -153,6 +157,13 @@
 		  <artifactId>micrometer-registry-prometheus</artifactId>
 		  <scope>runtime</scope>
 		</dependency>
+		
+		<!-- cache com Redis -->
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-data-redis</artifactId>
+	</dependency>
+
 		
 		
 	</dependencies>
