@@ -159,12 +159,16 @@
 		</dependency>
 		
 		<!-- cache com Redis -->
-	<dependency>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-data-redis</artifactId>
-	</dependency>
-
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
 		
+		<!-- dependency para webclient -->
+		 <dependency>
+	      	<groupId>org.springframework.boot</groupId>
+	      	<artifactId>spring-boot-starter-webflux</artifactId>
+	    </dependency>
 		
 	</dependencies>
 	<dependencyManagement>

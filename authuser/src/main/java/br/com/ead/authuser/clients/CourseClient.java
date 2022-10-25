@@ -15,19 +15,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
-
-
+import org.springframework.web.reactive.function.client.WebClient;
 
 import br.com.ead.authuser.dto.CourseDto;
 import br.com.ead.authuser.dto.ResponsePageDto;
 import br.com.ead.authuser.services.impl.UtilsServiceImpl;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.log4j.Log4j2;
+import reactor.core.publisher.Mono;
 
 @Log4j2
 @Component
@@ -35,6 +35,9 @@ public class CourseClient {
 
 	@Autowired
 	private RestTemplate restTemplate;
+	
+	@Autowired
+	private WebClient webClient;
 
 	@Autowired
 	private UtilsServiceImpl utilsServiceImpl;
@@ -47,15 +50,10 @@ public class CourseClient {
 	//@Retry(name = "retryInstance", fallbackMethod = "retryFallback")
 	@CircuitBreaker(name = "circuitbreakerInstance", fallbackMethod = "circuitBreakFallback")
 	public Page<CourseDto> getAllCoursesByUser(UUID userId, Pageable pageable, String token) {
-		List<CourseDto> searchResult = null;
-		String url = REQUEST_URI + utilsServiceImpl.createUrlGetAllCoursesByUser(userId, pageable);
 		ResponseEntity<ResponsePageDto<CourseDto>> result = null;
-        log.info("Calling service course ead: {} ", url);
         try{
-            ParameterizedTypeReference<ResponsePageDto<CourseDto>> responseType = new ParameterizedTypeReference<ResponsePageDto<CourseDto>>() {};
-            result = restTemplate.exchange(url, HttpMethod.GET, buildHeader(token) , responseType);
-            searchResult = result.getBody().getContent();
-            log.info("Response Number of Elements: {} ", searchResult.size());
+        	ParameterizedTypeReference<ResponsePageDto<CourseDto>> responseType = new ParameterizedTypeReference<ResponsePageDto<CourseDto>>() {};
+            result = callUsingRestTemplate(userId, pageable, token, responseType);
         } catch (HttpStatusCodeException e){
             log.error("Error request /courses {} ", e);
         } catch (Exception e){
@@ -65,6 +63,27 @@ public class CourseClient {
         log.info("Ending request /courses userId {} ", userId);
         return result.getBody();
     }
+	
+	private ResponseEntity<ResponsePageDto<CourseDto>> callUsingWebClient(UUID userId, Pageable pageable, String token, ParameterizedTypeReference<ResponsePageDto<CourseDto>> responseType) {
+		Mono<ResponsePageDto<CourseDto>> result = webClient.method(HttpMethod.GET)
+		         .uri(utilsServiceImpl.createUrlGetAllCoursesByUser(userId, pageable))
+		         .retrieve()
+		         .bodyToMono(responseType);
+		
+		ResponsePageDto<CourseDto> lisfOfCourseByUser = result.block();
+		return  ResponseEntity.status(HttpStatus.OK).body(lisfOfCourseByUser);
+		
+	}
+	
+	
+	private ResponseEntity<ResponsePageDto<CourseDto>> callUsingRestTemplate(UUID userId, Pageable pageable, String token, ParameterizedTypeReference<ResponsePageDto<CourseDto>> responseType) {
+		String url = REQUEST_URI + utilsServiceImpl.createUrlGetAllCoursesByUser(userId, pageable);
+		log.info("Calling service course ead: {} ", url);
+		ResponseEntity<ResponsePageDto<CourseDto>> result = restTemplate.exchange(url, HttpMethod.GET, buildHeader(token), responseType);
+		List<CourseDto> searchResult = result.getBody().getContent();
+        log.info("Response Number of Elements: {} ", searchResult.size());
+		return result;
+	}
 	
 	public HttpEntity<String> buildHeader(String token) {
 		HttpHeaders headers = new HttpHeaders();
