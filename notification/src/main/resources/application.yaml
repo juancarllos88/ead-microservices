@@ -32,13 +32,13 @@ spring:
     addresses: amqp://admin:admin@localhost:5672
     listener:
       simple:
-        default-requeue-rejected: 'false' ##desabilita o reenvio da mensagem novamente para fila em caso de erro
+        default-requeue-rejected: 'false' #desabilita o reenvio da mensagem novamente para fila em caso de erro
         retry:
           enabled: true
-          initial-interval: 10s ##A mensagem deve ser repetida após um intervalo de 3s.
-          max-attempts: 1 ## A mensagem deve ser repetida no máximo 6 vezes. Depois disso, ele será enviado para a fila de mensagens mortas.
-          max-interval: 10s ## O intervalo de tempo máximo entre duas tentativas nunca deve exceder 10s.
-          multiplier: 2 ## O intervalo entre a segunda tentativa é multiplicado por 2. Mas esse intervalo nunca pode exceder o intervalo máximo. Portanto, os valores do intervalo de repetição serão 3s, 6s, 10s, 10s, 10s. Como 10 seg é o intervalo máximo especificado.
+          initial-interval: 10s #A mensagem deve ser repetida após um intervalo de 3s.
+          max-attempts: 1 # A mensagem deve ser repetida no máximo 6 vezes. Depois disso, ele será enviado para a fila de mensagens mortas.
+          max-interval: 10s # O intervalo de tempo máximo entre duas tentativas nunca deve exceder 10s.
+          multiplier: 2 # O intervalo entre a segunda tentativa é multiplicado por 2. Mas esse intervalo nunca pode exceder o intervalo máximo. Portanto, os valores do intervalo de repetição serão 3s, 6s, 10s, 10s, 10s. Como 10 seg é o intervalo máximo especificado.
 
 
 logging:
