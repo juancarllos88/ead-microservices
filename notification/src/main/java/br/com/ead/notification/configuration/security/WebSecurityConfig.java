@@ -21,6 +21,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
+    private static final String[] WHITE_LIST_URL = {"/notifications/send"};
+
     @Autowired
     AuthenticationEntryPointImpl authenticationEntryPoint;
 
@@ -45,6 +47,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
+                .antMatchers(WHITE_LIST_URL).permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .csrf().disable();

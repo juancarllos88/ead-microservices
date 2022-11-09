@@ -50,9 +50,10 @@ public class NotificationConsumer {
             exchange = @Exchange(value = "amq.direct", type = ExchangeTypes.DIRECT, ignoreDeclarationExceptions = "true"))
     )
     public void listenTest(@Payload Testando message, Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long tag) throws IOException{
-    	log.info("Payload: {}", message);
-    	/*//Envia para o broker um ack de recebimento da mensage
-    	channel.basicAck(tag, true);*/
+    	//Envia para o broker um ack de recebimento da mensage
+    	channel.basicAck(tag, true);
+		log.info("Payload: {}", message);
+		if(true)throw new RuntimeException("deu merda");
     }
 
 }
