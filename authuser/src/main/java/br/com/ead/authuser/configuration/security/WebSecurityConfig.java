@@ -11,6 +11,7 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,12 +20,13 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableWebSecurity
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
+public class WebSecurityConfig{
 	
 	private static final String[] WHITE_LIST_URL = {"/auth/**", "/actuator/**"};
 	
@@ -46,9 +48,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 		roleHierarchy.setHierarchy(hierarchy);
 		return roleHierarchy;
 	}
-	
-	@Override
-	protected void configure(HttpSecurity http) throws Exception {
+
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http.exceptionHandling()
 		    .authenticationEntryPoint(authenticationEntryPointImpl)
 		    .and()
@@ -62,32 +64,33 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 		    .csrf().disable();
 		
 		http.addFilterBefore(authenticationJwtFilter(), UsernamePasswordAuthenticationFilter.class);
+
+		return http.build();
 	}
-	
-  /*@Override
+
+	@Bean
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+		return authConfig.getAuthenticationManager();
+	}
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
+
+    /*@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.inMemoryAuthentication()
 		.withUser("admin")
 		.password(passwordEncoder().encode("123456"))
 		.roles("ADMIN");
-		
-	}*/
-	
+
+	}
+
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
-		    
-	}
-	
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
-	
-	@Override
-	@Bean
-	public AuthenticationManager authenticationManagerBean() throws Exception {
-		return super.authenticationManagerBean();
-	}
+
+	}*/
 
 }
