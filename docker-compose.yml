@@ -53,7 +53,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_MULTIPLE_DATABASES="authuser","course","notification"
+      - POSTGRES_MULTIPLE_DATABASES="authuser","course","notification","payment"
     ports:
       - "5432:5432"
     networks:

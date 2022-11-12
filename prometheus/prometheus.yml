@@ -8,3 +8,9 @@ scrape_configs:
         - targets: ["host.docker.internal:8087"]
           labels:
             application: "api-authuser"
+  -   job_name: "api-payment-job"
+      metrics_path: "/ead-payment/actuator/prometheus"
+      static_configs:
+        - targets: ["host.docker.internal:8085"]
+          labels:
+            application: "api-payment"

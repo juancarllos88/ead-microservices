@@ -61,7 +61,10 @@ ead:
     key:
       notificationCommandRoutingKey: ms.*.notification
   auth:
-    jwtSecret: ead-projeto-decoder  
+    jwtSecret: ead-projeto-decoder
+  serviceRegistry:
+    username: ${EUREKA_USERNAME:ead}
+    password: ${EUREKA_PASSWORD:ead}
 
 
 management:
@@ -74,7 +77,7 @@ management:
 
 eureka:
   client:
-    serviceUrl:
-      defaultZone: 'http://localhost:8761/eureka'
+    service-url:
+      defaultZone: ${EUREKA_URL:http://${ead.serviceRegistry.username}:${ead.serviceRegistry.password}@localhost:8761/eureka}
   instance:
-    hostname: localhost
+    hostname: ${APP_DOMAIN_NAME:localhost}

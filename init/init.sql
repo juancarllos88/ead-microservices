@@ -1,3 +1,4 @@
 CREATE DATABASE authuser;
 CREATE DATABASE course;
 CREATE DATABASE notification;
+CREATE DATABASE payment;
