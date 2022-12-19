@@ -131,7 +131,28 @@ services:
       JDBC_DATABASE_USERNAME: postgres
       JDBC_DATABASE_PASSWORD: postgres
       EUREKA_URL: http://eureka-decoder:8761/eureka
-      CLOUDAMQP_URL: amqp://admin:admin@rabbitmq-decoder:5672     
+      CLOUDAMQP_URL: amqp://admin:admin@rabbitmq-decoder:5672
+
+  payment-decoder:
+    container_name: payment-decoder
+    build:
+      context: "./payment"
+      dockerfile: Dockerfile
+    image: juancarllos88/payment:latest
+    ports:
+      - "8085:8085"
+      - "5005:5005"
+    networks:
+      - backend-decoder
+    depends_on:
+      - eureka-decoder
+    environment:
+      JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      JDBC_DATABASE_URL: jdbc:postgresql://postgres-decoder:5432/payment
+      JDBC_DATABASE_USERNAME: postgres
+      JDBC_DATABASE_PASSWORD: postgres
+      EUREKA_URL: http://ead:ead@eureka-decoder:8761/eureka
+      CLOUDAMQP_URL: amqp://admin:admin@rabbitmq-decoder:5672
 
   # config-server-decoder:
   #   container_name: config-server-decoder

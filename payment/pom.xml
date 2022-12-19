@@ -121,6 +121,17 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludeDevtools>false</excludeDevtools>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>dockerfile-maven-plugin</artifactId>
+				<version>1.4.2</version>
+				<configuration>
+					<repository>juancarllos88/${project.artifactId}</repository>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

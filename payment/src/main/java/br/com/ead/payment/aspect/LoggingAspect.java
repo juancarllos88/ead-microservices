@@ -28,14 +28,15 @@ public class LoggingAspect {
             String className = pj.getTarget().getClass().toString();
 
             Object[] array = pj.getArgs();
-            log.info("Inside "+className+ "class "+methodName+" method, with request : "+mapper.writeValueAsString(array));
+            log.info("Request. Inside "+className+ "class "+methodName+" method, with request : "+mapper.writeValueAsString(array));
 
             response = pj.proceed();
 
-            log.info("Inside "+className+ "class "+methodName+" method, with response : "+mapper.writeValueAsString(response));
+            log.info("Response. Inside "+className+ "class "+methodName+" method, with response : "+mapper.writeValueAsString(response));
 
         }catch (Exception e){
-
+            log.info("Erro classe de servico. Lancando Exception");
+            throw e;
         }
         return response;
     }
@@ -43,7 +44,6 @@ public class LoggingAspect {
     @AfterThrowing("loggingPointCut()")
     public void logError(JoinPoint joinPoint){
         //Advice
-        log.info(" Check for user access ");
-        log.info(" Allowed execution for {}", joinPoint);
+        log.info("Capturando exception com aspecto.Allowed execution for {}", joinPoint);
     }
 }

@@ -11,7 +11,7 @@ import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 public class PaymentApplication {
 
 	public static void main(String[] args) {
-
+		System.out.println("asdasd");
 		SpringApplication.run(PaymentApplication.class, args);
 	}
 

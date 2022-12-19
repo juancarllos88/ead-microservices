@@ -17,18 +17,13 @@ public class PaymentController {
 
     private final PaymentService service;
 
-    private final PaymentsMetricsCounter metrics;
-
-
-    public PaymentController(PaymentService service, PaymentsMetricsCounter metrics) {
+    public PaymentController(PaymentService service) {
         this.service = service;
-        this.metrics = metrics;
     }
 
     @PostMapping
     public ResponseEntity<String> doSomething(@RequestBody PaymentDto payment){
         String response = service.doSomething(payment.getValor());
-        metrics.incrementPayemnt(PaymenMetricTypes.APPROVED);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

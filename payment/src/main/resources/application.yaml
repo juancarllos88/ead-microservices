@@ -4,13 +4,16 @@ server:
     context-path: '/ead-payment/'
 
 spring:
+  devtools:
+    remote:
+      secret: mysecret
   application:
     name: ead-payment-service
 
   datasource:
-    url:  jdbc:postgresql://localhost:5432/payment
-    username: postgres
-    password: postgres
+    url: ${JDBC_DATABASE_URL:jdbc:postgresql://localhost:5432/payment}
+    username: ${JDBC_DATABASE_USERNAME:postgres}
+    password: ${JDBC_DATABASE_PASSWORD:postgres}
   jpa:
     hibernate:
       ddl-auto: update
@@ -21,7 +24,7 @@ spring:
       hibernate:
         show_sql: true
   rabbitmq:
-    addresses: amqp://admin:admin@localhost:5672
+    addresses: ${CLOUDAMQP_URL:amqp://admin:admin@localhost:5672}
 
 ead:
   auth:
