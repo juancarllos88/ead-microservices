@@ -1,6 +1,7 @@
 package br.com.ead.authuser.configuration;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -12,7 +13,7 @@ public class WebClientConfig {
 	@Value("${ead.api.url.course}")
 	private String REQUEST_URI_COURSE;
 	
-	
+	@Bean
 	public WebClient webClient(WebClient.Builder builder) {
 		return builder.baseUrl(REQUEST_URI_COURSE)
 				.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)

@@ -35,7 +35,8 @@ public class NotificationConsumer {
 //			key = "${ead.broker.key.notificationCommandRoutingKey}"))
 	@RabbitListener(queues = "${ead.broker.queue.notificationCommand}")
 	public void listen(@Payload NotificationCommandDto notificationDto) throws RuntimeException{
-		//throw new RuntimeException("deu merda");
+		System.out.println("user "+ notificationDto.getUserId());
+		if(true)throw new RuntimeException("deu merda");
 		log.info("Message command read to subscription user in courser {}", notificationDto.toString());
 		notificationService.save(notificationDto);
 	}
